@@ -9,18 +9,13 @@ out vec3 color;
 // Outputs the texture coords to the frag shader
 out vec2 texCoord;
 
-// Controls scale of vertices
-uniform float scale;
-
-// Matrices needed for 3D perspective view
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+// Import camera matrix from main function
+uniform mat4 camMatrix;
 
 void main()
 {
 	// Outputs the positions and coords of all vertices
-	gl_Position = projection * view * model * vec4(aPos, 1.0);
+	gl_Position = camMatrix * vec4(aPos, 1.0);
 
 	color = aColor; // Assigns the colors from the vertex data to "color" variable
 	texCoord = aTex;

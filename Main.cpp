@@ -11,6 +11,7 @@
 #include "VAO.h"
 #include "VBO.h"
 #include "EBO.h"
+#include "Camera.h"
 
 #include <Windows.h>
 
@@ -99,17 +100,15 @@ int main()
 	VBO1.Unbind();
 	EBO1.Unbind();
 
-	// Gets ID of uniform "scale"
-	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
 	// Texture
 	Texture popCat("pop_cat.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 	popCat.texUnit(shaderProgram, "tex0", 0);
 
-	float rotation = 0.0f;
-	double prevTime = glfwGetTime();
-
 	glEnable(GL_DEPTH_TEST); // Enable the depth buffer
+
+	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -118,6 +117,8 @@ int main()
 
 		shaderProgram.Activate(); // Give OpenGL the ShaderProgram
 
+		camera.Inputs(window); // Handle camera inputs
+		camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix"); // Update and export camera matrix to vertex shader
 
 		/* JUST HERE FOR TESTING FOR NOW */
 		if (GetAsyncKeyState(VK_DOWN))
@@ -133,34 +134,6 @@ int main()
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 		}
 
-		// Timer
-		double currTime = glfwGetTime();
-		if (currTime - prevTime >= 1 / 60)
-		{
-			rotation += 0.5f;
-			prevTime = currTime;
-		}
-
-		// Initialize matrices so they're not null
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view  = glm::mat4(1.0f);
-		glm::mat4 proj  = glm::mat4(1.0f);
-
-		// Assign transformations to matrix
-		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-		view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-		proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
-
-		// Give matrices to the vertex shader
-		int modelLocation = glGetUniformLocation(shaderProgram.ID, "model");
-		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-		int viewLocation = glGetUniformLocation(shaderProgram.ID, "view");
-		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
-		int projectionLocation = glGetUniformLocation(shaderProgram.ID, "projection");
-		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(proj));
-
-
-		glUniform1f(uniID, 0.5f); // Assign a value to the uniform (must be after shaderProgram.activate())
 		popCat.Bind();
 
 		VAO1.Bind(); // Bind VAO so OpenGL knows how to use it
