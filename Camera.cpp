@@ -7,7 +7,13 @@ Camera::Camera(int width, int height, glm::vec3 position)
 	this->Position = position;
 }
 
-void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform)
+void Camera::Matrix(Shader& shader, const char* uniform)
+{
+	// Export camera matrix to vertex shader
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
+}
+
+void Camera::UpdateMatrix(float FOVdeg, float nearPlane, float farPlane)
 {
 	// Initialize matrices so they're not null
 	glm::mat4 view = glm::mat4(1.0f);
@@ -18,8 +24,7 @@ void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shade
 	// Perspective view
 	projection = glm::perspective(glm::radians(FOVdeg), (float)(width / height), nearPlane, farPlane);
 
-	// Export camera matrix to vertex shader
-	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(projection * view));
+	cameraMatrix = projection * view;
 }
 
 void Camera::Inputs(GLFWwindow* window)
@@ -69,11 +74,11 @@ void Camera::Inputs(GLFWwindow* window)
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-		// Stop the camera "teleporting" when clicking the window at a non-center position
-		if (firstClick)
+		// Stop the camera from "teleporting" when clicking the window at a non-center position
+		if (m_bLeftMouseClick)
 		{
 			glfwSetCursorPos(window, (width / 2), (height / 2));
-			firstClick = false;
+			m_bLeftMouseClick = false;
 		}
 
 		double mouseX, mouseY;
@@ -97,6 +102,6 @@ void Camera::Inputs(GLFWwindow* window)
 	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE	)
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		firstClick = true;
+		m_bLeftMouseClick = true;
 	}
 }
