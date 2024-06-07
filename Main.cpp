@@ -81,7 +81,7 @@ GLuint indices[] =
 //};
 
 GLfloat lightVertices[] =
-{
+{ 
 	-0.1f, -0.1f,  0.1f,
 	-0.1f, -0.1f, -0.1f,
 	 0.1f, -0.1f, -0.1f,
@@ -191,8 +191,11 @@ int main()
 
 
 	// Texture
-	Texture popCat("pop_cat.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	popCat.texUnit(shaderProgram, "tex0", 0);
+	//Texture planksTex("planks.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+	Texture planksTex("planks.png", GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+	planksTex.texUnit(shaderProgram, "tex0", 0);
+	Texture planksSpec("planksSpec.png", GL_TEXTURE_2D, 1, GL_RED, GL_UNSIGNED_BYTE);
+	planksSpec.texUnit(shaderProgram, "tex1", 1);
 
 	glEnable(GL_DEPTH_TEST); // Enable the depth buffer
 
@@ -227,7 +230,9 @@ int main()
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 		}
 
-		popCat.Bind();
+		// Bind textures and maps
+		planksTex.Bind();
+		planksSpec.Bind();
 
 		VAO1.Bind(); // Bind VAO so OpenGL knows how to use it
 
@@ -248,7 +253,7 @@ int main()
 	VAO1.Delete();
 	VBO1.Delete();
 	EBO1.Delete();
-	popCat.Delete();
+	planksTex.Delete();
 	shaderProgram.Delete();
 	lightVAO.Delete();
 	lightVBO.Delete();

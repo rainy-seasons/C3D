@@ -14,7 +14,7 @@ Texture::Texture(const char* image, GLenum texType, GLuint slot, GLenum format, 
 	glBindTexture(texType, ID);
 
 	// Configure min/mag algorithm (GL_NEAREST or GL_LINEAR)
-	glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 	glTexParameteri(texType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// Configure the wya the texture repeats (if it does)

@@ -59,7 +59,9 @@
     <None Include="light.frag">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="light.vert" />
+    <None Include="light.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderClass.h">
