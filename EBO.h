@@ -2,12 +2,13 @@
 #define EBO_H
 
 #include <glad/glad.h>
+#include <vector>
 
 class EBO
 {
 public:
 	GLuint ID;
-	EBO(GLuint* indices, GLsizeiptr size); // Constructor generates Element Buffer Object and links it to indices
+	EBO(std::vector<GLuint>& indices); // Constructor generates Element Buffer Object and links it to indices
 
 	void Bind();
 	void Unbind();

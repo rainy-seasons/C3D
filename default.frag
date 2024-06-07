@@ -3,14 +3,14 @@
 out vec4 FragColor;
 
 // Import the needed variables from the Vertex Shader
+in vec3 currPos;
+in vec3 Normal; 
 in vec3 color;    
 in vec2 texCoord;
-in vec3 Normal; 
-in vec3 currPos;
 
 // Get variables from main function
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform sampler2D diffuse0;
+uniform sampler2D specular0;
 uniform vec4 lightColor;
 uniform vec3 lightPos;
 uniform vec3 camPos;
@@ -38,7 +38,7 @@ vec4 PointLight()
 	vec3 reflectionDir = reflect(-lightDir, normal);
 	float specAmount = pow(max(dot(viewDir, reflectionDir), 0.0f), 16);
 	float specular = specAmount * specularLight;
-	return (texture(tex0, texCoord) * (diffuse * intensity + ambient) + texture(tex1, texCoord).r * specular * intensity) * lightColor;
+	return (texture(diffuse0, texCoord) * (diffuse * intensity + ambient) + texture(specular0, texCoord).r * specular * intensity) * lightColor;
 }
 
 vec4 DirectLight()
@@ -57,7 +57,7 @@ vec4 DirectLight()
 	float specAmount = pow(max(dot(viewDir, reflectionDir), 0.0f), 16);
 	float specular = specAmount * specularLight;
 
-	return (texture(tex0, texCoord) * (diffuse + ambient) + texture(tex1, texCoord).r * specular) * lightColor;
+	return (texture(diffuse0, texCoord) * (diffuse + ambient) + texture(specular0, texCoord).r * specular) * lightColor;
 }
 
 vec4 SpotLight()
@@ -87,7 +87,7 @@ vec4 SpotLight()
 	float angle = dot(vec3(0.0f, -1.0f, 0.0f), -lightDir);
 	float intensity = clamp((angle - outerCone) / (innerCone - outerCone), 0.0f, 1.0f);
 
-	return (texture(tex0, texCoord) * (diffuse * intensity + ambient) + texture(tex1, texCoord).r * specular * intensity) * lightColor;
+	return (texture(diffuse0, texCoord) * (diffuse * intensity + ambient) + texture(specular0, texCoord).r * specular * intensity) * lightColor;
 }
 
 void main()
