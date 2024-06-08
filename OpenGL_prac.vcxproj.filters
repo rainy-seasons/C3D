@@ -16,9 +16,6 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{09980ae6-ba46-4e4b-b3bf-518b243b1827}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Textures">
-      <UniqueIdentifier>{307b5862-9f60-4271-be9d-4905e00311b0}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -49,6 +46,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -88,16 +88,11 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="F:\F-DOWNLOADS\pop_cat.png">
-      <Filter>Resource Files\Textures</Filter>
-    </Image>
-    <Image Include="planks.png">
-      <Filter>Resource Files\Textures</Filter>
-    </Image>
-    <Image Include="planksSpec.png">
-      <Filter>Resource Files\Textures</Filter>
-    </Image>
+    <ClInclude Include="libararies\include\json\json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

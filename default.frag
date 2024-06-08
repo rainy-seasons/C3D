@@ -21,8 +21,10 @@ vec4 PointLight()
 {
 	vec3 lightVec = lightPos - currPos;
 	float dist = length(lightVec);
-	float a = 1.0;
-	float b = 0.4;
+	//float a = 1.0;
+	//float b = 0.4;
+	float a = 3;
+	float b = 0.8;
 	float intensity = 1.0f / (a * dist * dist + b * dist + 1.0f);
 	
 	float ambient = 0.20f;
@@ -92,7 +94,7 @@ vec4 SpotLight()
 
 void main()
 {
-	FragColor = PointLight();
+	//FragColor = PointLight();
 	//FragColor = SpotLight();
-	//FragColor = DirectLight();
+	FragColor = DirectLight();
 }

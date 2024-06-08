@@ -24,7 +24,7 @@ public:
 	bool m_bLeftMouseClick;
 
 	int width, height;
-	float speed = 0.05f;
+	float speed = 0.1f;
 	float sensitivity = 100.0f;
 
 	void Matrix(Shader &shader, const char* uniform); // Exports the camera matrix to a shader

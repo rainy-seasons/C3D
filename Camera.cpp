@@ -62,12 +62,12 @@ void Camera::Inputs(GLFWwindow* window)
 	// Increase speed when left shift is held
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
-		speed = 0.2f;
+		speed = 0.5f;
 	}
 	// Reset speed when left shift is released
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 	{
-		speed = 0.05f;
+		speed = 0.1f;
 	}
 	// Hold left click to rotate camera
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
