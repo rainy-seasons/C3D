@@ -54,9 +54,11 @@ void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 matrix, glm::vec3 tran
 	glUniform3f(glGetUniformLocation(shader.ID, "camPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 	camera.Matrix(shader, "camMatrix");
 
+	// TODO: All of these should have a runtime control in the UI
 	glm::mat4 transl = glm::mat4(1.0f);
 	glm::mat4 rot = glm::mat4(1.0f);
-	glm::mat4 sca = glm::mat4(1.0f);
+	//glm::mat4 sca = glm::mat4(1.0f);
+	glm::mat4 sca = glm::mat4(0.2f); // TODO: This one especially
 
 	transl = glm::translate(transl, translation);
 	rot = glm::mat4_cast(rotation);

@@ -42,10 +42,8 @@ int main()
 	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
 	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z); 
 
-
-	
-
 	glEnable(GL_DEPTH_TEST); // Enable the depth buffer
+	glDepthFunc(GL_LESS);
 
 	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0.0f, 3.0f, 0.0f));
 
@@ -54,7 +52,8 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
-		glClearColor(0.07f, 0.13f, 0.17f, 1.0f); // Background color
+	//	glClearColor(0.95f, 0.13f, 0.17f, 1.0f); // Background color
+		glClearColor(0.85f, 0.85f, 0.90f, 1.0f); // Background color (grey)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear back buffer and depth buffer
 
 		camera.Inputs(window); // Handle camera inputs
