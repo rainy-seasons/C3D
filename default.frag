@@ -15,6 +15,8 @@ uniform vec4 lightColor;
 uniform vec3 lightPos;
 uniform vec3 camPos;
 
+uniform int renderMode; // 0: Depth, 1: DirectLight, 2: PointLight, 3: SpotLight
+
 // Quadratic light equation for CG instead of 1/d^2
 // We use: i = 1/a*d^2+b*d+1
 vec4 PointLight()
@@ -109,8 +111,27 @@ float logisticDepth(float depth, float steepness = 0.5f, float offset = 5.0f)
 void main()
 {
 	float depth = logisticDepth(gl_FragCoord.z);
-	FragColor = DirectLight() * (1.0f - depth) + vec4(depth * vec3(0.85f, 0.85f, 0.90f), 1.0f);
-	//FragColor = PointLight();
-	//FragColor = SpotLight();
-	//FragColor = DirectLight();
+
+	if (renderMode == 0)
+	{
+		// Depth view without textures
+        FragColor = vec4(depth * vec3(0.85f, 0.85f, 0.90f), 1.0f);
+	}
+	else if (renderMode == 1)
+	{
+		// Depth with textures
+		FragColor = DirectLight() * (1.0f - depth) + vec4(depth * vec3(0.85f, 0.85f, 0.90f), 1.0f);
+	}
+	else if (renderMode == 2)
+	{
+		FragColor = DirectLight();
+	}
+	else if (renderMode == 3)
+	{
+		FragColor = PointLight();
+	}
+	else if (renderMode == 4)
+	{
+		FragColor = SpotLight();
+	}
 }

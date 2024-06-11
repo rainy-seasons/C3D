@@ -38,6 +38,7 @@ int main()
 	glm::mat4 lightModel = glm::mat4(1.0f);
 	lightModel = glm::translate(lightModel, lightPos);
 
+
 	shaderProgram.Activate();
 	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
 	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z); 
@@ -49,10 +50,11 @@ int main()
 
 	Model model("models/test/sword/scene.gltf");
 
+	int renderMode = 0;
 
 	while (!glfwWindowShouldClose(window))
 	{
-	//	glClearColor(0.95f, 0.13f, 0.17f, 1.0f); // Background color
+	//	glClearColor(0.07f, 0.13f, 0.17f, 1.0f); // Background color
 		glClearColor(0.85f, 0.85f, 0.90f, 1.0f); // Background color (grey)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear back buffer and depth buffer
 
@@ -75,7 +77,16 @@ int main()
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 		}
-
+		if (GetAsyncKeyState(VK_RIGHT))
+		{
+			renderMode++;
+			if (renderMode > 4)
+			{
+				renderMode = 0;
+			}
+			Sleep(100);
+		}
+		glUniform1i(glGetUniformLocation(shaderProgram.ID, "renderMode"), renderMode);
 		glfwSwapBuffers(window); // Swap back buffer with front buffer
 
 		// Process GLFW events
