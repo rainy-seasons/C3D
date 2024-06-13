@@ -57,17 +57,23 @@ void Mesh::Draw(Shader& shader, Camera& camera, glm::mat4 matrix, glm::vec3 tran
 	// TODO: All of these should have a runtime control in the UI
 	glm::mat4 transl = glm::mat4(1.0f);
 	glm::mat4 rot = glm::mat4(1.0f);
-	//glm::mat4 sca = glm::mat4(1.0f);
-	glm::mat4 sca = glm::mat4(0.2f); // TODO: This one especially
+	glm::mat4 sca = glm::mat4(1.0f);
+
+	//glm::mat4 sca = glm::mat4(2.0f); // TODO
 
 	transl = glm::translate(transl, translation);
 	rot = glm::mat4_cast(rotation);
 	sca = glm::scale(sca, scale);
 
+	// Apply correction matrix for coordinate system mismatch
+	glm::mat4 correctionMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 correctedMatrix = correctionMatrix * matrix;
+
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "translation"), 1, GL_FALSE, glm::value_ptr(transl));
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "rotation"), 1, GL_FALSE, glm::value_ptr(rot));
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "scale"), 1, GL_FALSE, glm::value_ptr(sca));
-	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(matrix));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(correctedMatrix));
+	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(matrix));
 
 
 	// Draw mesh

@@ -8,6 +8,11 @@
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 800;
 
+void setClearColor(float red, float green, float blue, float alpha) 
+{
+	glClearColor(red, green, blue, alpha);
+}
+
 int main()
 {
 	glfwInit();
@@ -18,7 +23,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Use CORE profile
 
 
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL Test", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "C3D", NULL, NULL);
 	if (window == NULL) 
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -45,23 +50,65 @@ int main()
 
 	glEnable(GL_DEPTH_TEST); // Enable the depth buffer
 	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
+	glEnable(GL_CULL_FACE); // Enable face culling
+	glCullFace(GL_BACK);    // Cull back faces and keep front faces
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0.0f, 3.0f, 0.0f));
 
-	Model model("models/test/sword/scene.gltf");
+	Model model("models/test/statue/scene.gltf");
+	Model grass("models/test/grass/scene.gltf");
+	Model ground("models/test/ground/scene.gltf");
 
 	int renderMode = 0;
 
+	// For FPS counter
+	double prevTime = 0.0;
+	double currTime = 0.0;
+	double timeDiff;
+	unsigned int counter = 0;
+
+	//glfwSwapInterval(0); // Disables vsync if it's not forced by drivers
+
 	while (!glfwWindowShouldClose(window))
 	{
-	//	glClearColor(0.07f, 0.13f, 0.17f, 1.0f); // Background color
-		glClearColor(0.85f, 0.85f, 0.90f, 1.0f); // Background color (grey)
+		// FPS counter in window title
+		currTime = glfwGetTime();
+		timeDiff = currTime - prevTime;
+		counter++;
+		if (timeDiff >= 1.0 / 30.0)
+		{
+			std::string FPS = std::to_string((1.0 / timeDiff) * counter);
+			std::string ms = std::to_string((timeDiff / counter) * 1000);
+			std::string newTitle = "C3D - " + FPS + "FPS / " + ms + "ms";
+			glfwSetWindowTitle(window, newTitle.c_str());
+			prevTime = currTime;
+			counter = 0;
+		}
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear back buffer and depth buffer
 
 		camera.Inputs(window); // Handle camera inputs
 		camera.UpdateMatrix(45.0f, 0.1f, 100.0f); // Update and export camera matrix to vertex shader
 
 		model.Draw(shaderProgram, camera);
+		//ground.Draw(shaderProgram, camera);
+
+		//TODO: Set this up to be automatic
+		glDisable(GL_CULL_FACE);
+		//glEnable(GL_BLEND);
+		grass.Draw(shaderProgram, camera);
+		glDepthMask(GL_TRUE); // Re-enable depth writing
+		glEnable(GL_CULL_FACE);
+		//glDisable(GL_BLEND);
+
+		// Set the background color to grey if renderMode is set to textureless depth
+		// Otherwise, make it blue
+		if (renderMode == 0)
+			setClearColor(0.85f, 0.85f, 0.9f, 1.0f);
+		else
+			setClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 
 
 		/* JUST HERE FOR TESTING FOR NOW */
@@ -84,16 +131,15 @@ int main()
 			{
 				renderMode = 0;
 			}
+			std::cout << "Rendering Mode : " << renderMode << std::endl;
 			Sleep(100);
 		}
+
 		glUniform1i(glGetUniformLocation(shaderProgram.ID, "renderMode"), renderMode);
+
 		glfwSwapBuffers(window); // Swap back buffer with front buffer
-
-		// Process GLFW events
-		glfwPollEvents();
+		glfwPollEvents(); // Process GLFW events
 	}
-
-	// Delete the objects
 
 	shaderProgram.Delete();
 

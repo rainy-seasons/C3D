@@ -15,7 +15,7 @@ uniform vec4 lightColor;
 uniform vec3 lightPos;
 uniform vec3 camPos;
 
-uniform int renderMode; // 0: Depth, 1: DirectLight, 2: PointLight, 3: SpotLight
+uniform int renderMode; // 0: Depth (textureless), 1: Depth (textured), 2: DirectLight, 3: PointLight, 4: SpotLight
 
 // Quadratic light equation for CG instead of 1/d^2
 // We use: i = 1/a*d^2+b*d+1
@@ -34,7 +34,12 @@ vec4 PointLight()
 	// Diffuse lighting
 	vec3 normal = normalize(Normal);
 	vec3 lightDir = normalize(lightVec);
-	float diffuse = max(dot(normal, lightDir), 0.0f);
+	float diffuse = max(abs(dot(normal, lightDir)), 0.0f);
+
+	if (texture(diffuse0, texCoord).a >= 0.9)
+	{
+		diffuse = max(dot(normal, lightDir), 0.0f);
+	}
 
 	// Specular lighting
 	float specularLight = 0.50f;
@@ -42,6 +47,12 @@ vec4 PointLight()
 	vec3 reflectionDir = reflect(-lightDir, normal);
 	float specAmount = pow(max(dot(viewDir, reflectionDir), 0.0f), 16);
 	float specular = specAmount * specularLight;
+
+	if (texture(diffuse0, texCoord).a < 0.1)
+	{
+		discard;
+	}
+
 	return (texture(diffuse0, texCoord) * (diffuse * intensity + ambient) + texture(specular0, texCoord).r * specular * intensity) * lightColor;
 }
 
@@ -52,7 +63,13 @@ vec4 DirectLight()
 	// diffuse lighting
 	vec3 normal = normalize(Normal);
 	vec3 lightDir = normalize(vec3(1.0f, 1.0f, 0.0f));
-	float diffuse = max(dot(normal, lightDir), 0.0f);
+	float diffuse = max(abs(dot(normal, lightDir)), 0.0f); // Absolute value helps with shading textures with transparency
+
+	// Don't use absolute value if the alpha is at least 0.9
+	if (texture(diffuse0, texCoord).a >= 0.90)
+	{
+		diffuse = max(dot(normal, lightDir), 0.0f);
+	}
 
 	// specular lighting
 	float specularLight = 0.50f;
@@ -60,6 +77,11 @@ vec4 DirectLight()
 	vec3 reflectionDir = reflect(-lightDir, normal);
 	float specAmount = pow(max(dot(viewDir, reflectionDir), 0.0f), 16);
 	float specular = specAmount * specularLight;
+	
+	if (texture(diffuse0, texCoord).a < 0.1)
+	{
+		discard;
+	}
 
 	return (texture(diffuse0, texCoord) * (diffuse + ambient) + texture(specular0, texCoord).r * specular) * lightColor;
 }
@@ -78,7 +100,14 @@ vec4 SpotLight()
 	// diffuse lighting
 	vec3 normal = normalize(Normal);
 	vec3 lightDir = normalize(lightPos - currPos);
-	float diffuse = max(dot(normal, lightDir), 0.0f);
+	float diffuse = max(abs(dot(normal, lightDir)), 0.0f);
+
+	// Don't use absolute value if the alpha is at least 0.9
+	if (texture(diffuse0, texCoord).a >= 0.9)
+	{
+		diffuse = max(dot(normal, lightDir), 0.0f);
+	}
+
 
 	// specular lighting
 	float specularLight = 0.50f;
@@ -90,6 +119,11 @@ vec4 SpotLight()
 	// calculates the intensity of the currPos based on its angle to the center of the light cone
 	float angle = dot(vec3(0.0f, -1.0f, 0.0f), -lightDir);
 	float intensity = clamp((angle - outerCone) / (innerCone - outerCone), 0.0f, 1.0f);
+	
+	if (texture(diffuse0, texCoord).a < 0.1)
+	{
+		discard;
+	}
 
 	return (texture(diffuse0, texCoord) * (diffuse * intensity + ambient) + texture(specular0, texCoord).r * specular * intensity) * lightColor;
 }

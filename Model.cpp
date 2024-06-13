@@ -26,6 +26,7 @@ void Model::loadMesh(unsigned int indMesh)
 	if (indMesh >= JSON["meshes"].size())
 	{
 		std::cerr << "ERROR: Mesh index out of bounds: " << indMesh << std::endl;
+		return;
 	}
 
 	unsigned int posAccInd = JSON["meshes"][indMesh]["primitives"][0]["attributes"]["POSITION"];
@@ -54,6 +55,9 @@ void Model::loadMesh(unsigned int indMesh)
 
 	std::vector<Texture> textures = getTextures();
 	std::cout << "Textures Loaded: " << textures.size() << std::endl;
+
+	// Debug: Log the textures assigned to this mesh
+	std::cout << "Textures assigned to mesh " << indMesh << ": " << textures.size() << std::endl;
 
 	meshes.push_back(Mesh(vertices, indices, textures));
 	std::cout << "Mesh successfully assembled." << std::endl;
@@ -258,6 +262,9 @@ std::vector<Texture> Model::getTextures()
 		// uri of current texture
 		std::string texturePath = JSON["images"][i]["uri"];
 
+		// Debug: Log the texture path being processed
+		std::cout << "Processing texture: " << texturePath << std::endl;
+
 		// Check if a texture is already loaded and skip it if so
 		// Prevents double loading textures
 		bool skip = false;
@@ -274,15 +281,16 @@ std::vector<Texture> Model::getTextures()
 		if (!skip)
 		{
 			std::string fullPath = fileDir + texturePath;
+			std::cout << "Loading texture from path: " << fullPath << std::endl;
 
-			if (texturePath.find("baseColor") != std::string::npos) // Check if it contains 'baseColor' -- this means it's a diffuse/albedo
+			if (texturePath.find("baseColor") != std::string::npos || texturePath.find("diffuse") != std::string::npos) // Check if it contains 'baseColor' -- this means it's a diffuse/albedo
 			{
 				Texture diffuse = Texture(fullPath.c_str(), "diffuse", loadedTex.size());
 				textures.push_back(diffuse);
 				loadedTex.push_back(diffuse);
 				loadedTexName.push_back(texturePath);
 			}
-			else if (texturePath.find("metallicRoughness") != std::string::npos) // If it contains 'metallicRoughness' then it can kind of be used as a specular map
+			else if (texturePath.find("metallicRoughness") != std::string::npos || texturePath.find("specular") != std::string::npos) // If it contains 'metallicRoughness' then it can kind of be used as a specular map
 			{
 				Texture specular = Texture(fullPath.c_str(), "specular", loadedTex.size());
 				textures.push_back(specular);
