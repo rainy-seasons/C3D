@@ -30,5 +30,7 @@ public:
 	void Matrix(Shader &shader, const char* uniform); // Exports the camera matrix to a shader
 	void UpdateMatrix(float FOVdeg, float nearPlane, float farPlane);  // Updates the camera matrix to the vertex shader
 	void Inputs(GLFWwindow* window);
+
+	glm::mat4 GetViewMatrix();
 };
 #endif

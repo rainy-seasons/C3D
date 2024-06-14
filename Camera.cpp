@@ -5,6 +5,9 @@ Camera::Camera(int width, int height, glm::vec3 position)
 	this->width = width;
 	this->height = height;
 	this->Position = position;
+	//Camera::width = width;
+	//Camera::height = height;
+	//Position = position;
 }
 
 void Camera::Matrix(Shader& shader, const char* uniform)
@@ -13,16 +16,17 @@ void Camera::Matrix(Shader& shader, const char* uniform)
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
 }
 
+glm::mat4 Camera::GetViewMatrix()
+{
+	return glm::lookAt(this->Position, this->Position + this->Orientation, this->Up);
+}
+
 void Camera::UpdateMatrix(float FOVdeg, float nearPlane, float farPlane)
 {
-	// Initialize matrices so they're not null
-	glm::mat4 view = glm::mat4(1.0f);
-	glm::mat4 projection = glm::mat4(1.0f);
-
 	// Make sure the camera is looking at the correct direction from the correct spot
-	view = glm::lookAt(Position, Position + Orientation, Up);
+	glm::mat4 view = glm::lookAt(Position, Position + Orientation, Up);
 	// Perspective view
-	projection = glm::perspective(glm::radians(FOVdeg), (float)(width / height), nearPlane, farPlane);
+	glm::mat4 projection = glm::perspective(glm::radians(FOVdeg), (float)(width) / height, nearPlane, farPlane);
 
 	cameraMatrix = projection * view;
 }
@@ -92,7 +96,8 @@ void Camera::Inputs(GLFWwindow* window)
 		glm::vec3 newOrientation = glm::rotate(Orientation, glm::radians(-rotX), glm::normalize(glm::cross(Orientation, Up)));
 
 		// Checks if next vertical orientation is allowed
-		if (!((glm::angle(newOrientation, Up) <= glm::radians(5.0f)) || (glm::angle(newOrientation, -Up) <= glm::radians(5.0f))))
+		//if (!((glm::angle(newOrientation, Up) <= glm::radians(5.0f)) || (glm::angle(newOrientation, -Up) <= glm::radians(5.0f))))
+		if (abs(glm::angle(newOrientation, Up) - glm::radians(90.0f)) <= glm::radians(85.0f))
 		{
 			Orientation = newOrientation;
 		}
