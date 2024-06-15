@@ -14,7 +14,7 @@ class Shader
 {
 public:
 	GLuint ID; // Reference ID of the shader program
-	Shader(const char* vertexFile, const char* fragmentFile); // Constructor for building shader program with vert and frag shaders
+	Shader(const char* vertexFile, const char* fragmentFile); 
 	void Activate();
 	void Delete();
 

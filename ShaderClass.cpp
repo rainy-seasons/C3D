@@ -21,10 +21,12 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 {
 	std::string vertexCode   = get_file_contents(vertexFile);
 	std::string fragmentCode = get_file_contents(fragmentFile);
+	//std::string geometryCode = get_file_contents(geometryFile);
 
 	// Convert these strings to character arrays
-	const char* vertexSource = vertexCode.c_str();
+	const char* vertexSource   = vertexCode.c_str();
 	const char* fragmentSource = fragmentCode.c_str();
+	//const char* geometrySource = geometryCode.c_str();
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);     // Create vertex shader object and get reference
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);       // Attach vertex shader source to the vertex shader object
@@ -37,17 +39,24 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 	glCompileShader(fragmentShader);
 	compileErrors(fragmentShader, "FRAGMENT");
 
+	//GLuint geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+	//glShaderSource(geometryShader, 1, &geometrySource, NULL);
+	//glCompileShader(geometryShader);
+	//compileErrors(geometryShader, "GEOMETRY");
+
 	ID = glCreateProgram(); // Create shader program object and get reference
 
 	// Attach shaders to the shader program
 	glAttachShader(ID, vertexShader);
 	glAttachShader(ID, fragmentShader);
+	//glAttachShader(ID, geometryShader);
 
 	glLinkProgram(ID); // Link all shaders together in shader program
 	compileErrors(ID, "PROGRAM");
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
+	//glDeleteShader(geometryShader);
 }
 
 void Shader::Activate()

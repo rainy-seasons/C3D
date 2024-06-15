@@ -144,6 +144,7 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ShaderClass.cpp" />
+    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="stb.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VAO.cpp" />
@@ -151,7 +152,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="default.frag" />
+    <None Include="default.geom" />
     <None Include="default.vert" />
+    <None Include="normals.frag" />
+    <None Include="normals.geom" />
     <None Include="skybox.frag" />
     <None Include="skybox.vert" />
   </ItemGroup>
@@ -162,6 +166,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ShaderClass.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="VAO.h" />
     <ClInclude Include="VBO.h" />

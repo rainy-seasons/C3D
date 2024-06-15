@@ -5,9 +5,6 @@ Camera::Camera(int width, int height, glm::vec3 position)
 	this->width = width;
 	this->height = height;
 	this->Position = position;
-	//Camera::width = width;
-	//Camera::height = height;
-	//Position = position;
 }
 
 void Camera::Matrix(Shader& shader, const char* uniform)
