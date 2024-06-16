@@ -88,10 +88,10 @@ Texture::Texture(const char* image, const char* texType, GLuint slot)
 void Texture::texUnit(Shader& shader, const char* uniform, GLuint unit)
 {
 	GLuint tex0Uni = glGetUniformLocation(shader.ID, uniform);
-	if (tex0Uni == -1)
-	{
-		std::cerr << "Warning: Texture uniform " << uniform << " not found in shader: " << std::endl;
-	}
+	//if (tex0Uni == -1)
+	//{
+	//	std::cerr << "Warning: Texture uniform " << uniform << " not found in shader!" << std::endl;
+	//}
 	shader.Activate();
 	glUniform1i(tex0Uni, unit);
 }

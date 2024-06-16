@@ -152,10 +152,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="default.frag" />
-    <None Include="default.geom" />
     <None Include="default.vert" />
     <None Include="normals.frag" />
     <None Include="normals.geom" />
+    <None Include="normals.vert" />
     <None Include="skybox.frag" />
     <None Include="skybox.vert" />
   </ItemGroup>

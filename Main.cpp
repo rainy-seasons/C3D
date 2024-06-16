@@ -9,10 +9,13 @@
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 800;
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void setClearColor(float red, float green, float blue, float alpha) 
 {
 	glClearColor(red, green, blue, alpha);
 }
+
+int renderMode = 0;
 
 int main()
 {
@@ -32,6 +35,7 @@ int main()
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+	glfwSetKeyCallback(window, key_callback);
 
 	gladLoadGL(); // Load GLAD
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -39,7 +43,7 @@ int main()
 	Skybox skybox;
 
 	Shader shaderProgram("default.vert", "default.frag");
-	//Shader normalShader("default.vert", "normals.frag");
+	Shader normalShader("normals.vert", "normals.frag", "normals.geom");
 
 
 	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -65,8 +69,8 @@ int main()
 	// Load models
 	Model model("res/models/statue/scene.gltf");
 	Model grass("res/models/grass/scene.gltf");
+	glm::mat4 modelMatrix = glm::mat4(1.0f); // Define model matrix
 
-	int renderMode = 0;
 
 	// For FPS counter
 	double prevTime = 0.0;
@@ -77,6 +81,8 @@ int main()
 	//glfwSwapInterval(0); // Disables vsync if it's not forced by drivers
 
 	skybox.Initialize();
+
+	bool drawNormals = false;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -98,8 +104,26 @@ int main()
 
 		camera.Inputs(window); // Handle camera inputs
 		camera.UpdateMatrix(45.0f, 0.1f, 100.0f); // Update and export camera matrix to vertex shader
-
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 		model.Draw(shaderProgram, camera);
+
+		normalShader.Activate();
+		glUniformMatrix4fv(glGetUniformLocation(normalShader.ID, "camMatrix"), 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+		glUniformMatrix4fv(glGetUniformLocation(normalShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniform1f(glGetUniformLocation(normalShader.ID, "normal_length"), 0.1f);
+
+		// TODO
+		/* JUST HERE FOR DEBUG PURPOSES - TEMPORARY */
+		if (GetAsyncKeyState(VK_SPACE))
+		{
+			drawNormals = !drawNormals;
+			std::cout << "Draw Normals: " << drawNormals << std::endl;
+			Sleep(100);
+		}
+		if (drawNormals)
+		{
+			model.Draw(normalShader, camera);
+		}
 
 		// Render skybox
 		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // Strip translation
@@ -117,31 +141,6 @@ int main()
 		else
 			setClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 
-
-		/* JUST HERE FOR TESTING FOR NOW */
-		if (GetAsyncKeyState(VK_DOWN))
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
-		if (GetAsyncKeyState(VK_UP))
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
-		if (GetAsyncKeyState(VK_LEFT))
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-		}
-		if (GetAsyncKeyState(VK_RIGHT))
-		{
-			renderMode++;
-			if (renderMode > 4)
-			{
-				renderMode = 0;
-			}
-			std::cout << "Rendering Mode : " << renderMode << std::endl;
-			Sleep(100);
-		}
-
 		glUniform1i(glGetUniformLocation(shaderProgram.ID, "renderMode"), renderMode);
 
 		glfwSwapBuffers(window); // Swap back buffer with front buffer
@@ -149,9 +148,41 @@ int main()
 	}
 
 	shaderProgram.Delete();
-	//skyboxShader.Delete();
+	normalShader.Delete();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (action == GLFW_PRESS)
+	{
+		switch (key)
+		{
+			case GLFW_KEY_ESCAPE:
+				glfwSetWindowShouldClose(window, true);
+				break;
+			case GLFW_KEY_DOWN:
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				break;
+			case GLFW_KEY_UP:
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				break;
+			case GLFW_KEY_LEFT:
+				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+				break;
+			case GLFW_KEY_RIGHT:
+				renderMode++;
+				if (renderMode > 4)
+				{
+					renderMode = 0;
+				}
+				std::cout << "Rendering Mode : " << renderMode << std::endl;
+				Sleep(100);
+				break;
+
+		}
+	}
 }
