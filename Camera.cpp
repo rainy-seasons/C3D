@@ -88,7 +88,7 @@ void Camera::Inputs(GLFWwindow* window)
 
 		float rotX = sensitivity * (float)(mouseY - (height / 2)) / height;
 		float rotY = sensitivity * (float)(mouseX - (height / 2)) / height;
-		
+
 		// Calculate upcoming vertical change in orientation
 		glm::vec3 newOrientation = glm::rotate(Orientation, glm::radians(-rotX), glm::normalize(glm::cross(Orientation, Up)));
 
@@ -101,7 +101,7 @@ void Camera::Inputs(GLFWwindow* window)
 		Orientation = glm::rotate(Orientation, glm::radians(-rotY), Up); // Rotate orientation left and right
 		glfwSetCursorPos(window, (width / 2), (height / 2)); // Set cursor pos to center of screen
 	}
-	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE	)
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		m_bLeftMouseClick = true;
