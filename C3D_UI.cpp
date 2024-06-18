@@ -1,17 +1,18 @@
 #include "C3D_UI.h"
 
-UI::UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float (&normalsColor)[4])
+UI::UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float(&normalsColor)[4], FileSelectedCallback callback)
+	: m_callback(callback)
 {
-	this->m_Window = window;
-	this->m_DrawNormals = &drawNormals;
-	this->m_RenderMode = &renderMode;
-	this->m_PolygonMode = &polygonMode;
+	this->m_window = window;
+	this->m_drawNormals = &drawNormals;
+	this->m_renderMode = &renderMode;
+	this->m_polygonMode = &polygonMode;
 
 	// TODO: fix this ugly shit
-	this->m_NormalsColor[0] = &normalsColor[0];
-	this->m_NormalsColor[1] = &normalsColor[1];
-	this->m_NormalsColor[2] = &normalsColor[2];
-	this->m_NormalsColor[3] = &normalsColor[3];
+	this->m_normalsColor[0] = &normalsColor[0];
+	this->m_normalsColor[1] = &normalsColor[1];
+	this->m_normalsColor[2] = &normalsColor[2];
+	this->m_normalsColor[3] = &normalsColor[3];
 }
 
 UI::~UI()
@@ -28,7 +29,7 @@ void UI::Setup()
 	ImGui::StyleColorsDark();
 
 	// Setup Platform/Renderer bindings
-	ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 }
 
@@ -48,10 +49,33 @@ void UI::DrawImgui()
 {
 	ImGui::Begin("C3D");
 
-	ImGui::Combo("Render Mode", m_RenderMode, "Depth (Textureless)\0Depth (Textured)\0Direct Light\0Point Light\0Spot Light\0");
-	ImGui::Combo("Polygon Mode", m_PolygonMode, "Fill\0Line\0Point\0");
-	ImGui::Checkbox("Show Normals", m_DrawNormals);
-	ImGui::ColorEdit3("Normals Color", *m_NormalsColor);
+	if (ImGui::Button("Open File"))
+	{
+		IGFD::FileDialogConfig config;
+		config.path = ".";
+		ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".gltf", config);
+	}
+
+	// Always draw the file dialog
+	if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+			std::cout << "Importing file: " << filePathName << "..." << std::endl;
+			if (m_callback)
+			{
+				m_callback(filePathName);
+			}
+		}
+		// Close the dialog
+		ImGuiFileDialog::Instance()->Close();
+	}
+	ImGui::Combo("Render Mode", m_renderMode, "Depth (Textureless)\0Depth (Textured)\0Direct Light\0Point Light\0Spot Light\0");
+	ImGui::Combo("Polygon Mode", m_polygonMode, "Fill\0Line\0Point\0");
+	ImGui::Checkbox("Show Normals", m_drawNormals);
+	ImGui::ColorEdit3("Normals Color", *m_normalsColor);
 
 	ImGui::End();
 }

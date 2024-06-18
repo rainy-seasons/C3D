@@ -1,13 +1,18 @@
+#define USE_STD_FILESYSTEM
 #ifndef C3D_UI_H
 #define C3D_UI_H
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "ImGuiFileDialog.h"
+#include <iostream>
 
 class UI
 {
 public:
-	UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float (&normalsColor)[4]);
+	using FileSelectedCallback = std::function<void(const std::string&)>;
+
+	UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float (&normalsColor)[4], FileSelectedCallback callback);
 	~UI();
 
 	void Setup();
@@ -15,11 +20,12 @@ public:
 	void Shutdown();
 
 private:
-	GLFWwindow* m_Window;
-	bool* m_DrawNormals;
-	int* m_RenderMode;
-	int* m_PolygonMode;
-	float* m_NormalsColor[4];
+	GLFWwindow* m_window;
+	bool* m_drawNormals;
+	int* m_renderMode;
+	int* m_polygonMode;
+	float* m_normalsColor[4];
+	FileSelectedCallback m_callback;
 
 	void DrawImgui();
 };

@@ -16,6 +16,9 @@ constexpr int WINDOW_HEIGHT = 800;
 
 void CheckStates();
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void LoadModel(Model& model, const std::string& path);
+bool FileExists(const std::string& path);
+std::string convertBackslashesToForward(const std::string& path);
 
 void SetClearColor(float red, float green, float blue, float alpha) 
 {
@@ -51,9 +54,6 @@ int main()
 	gladLoadGL(); // Load GLAD
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	UI GUI(window, drawNormals, renderMode, polygonMode, normalsColor);
-	GUI.Setup();
-
 	Skybox skybox;
 
 	Shader shaderProgram("default.vert", "default.frag");
@@ -81,6 +81,13 @@ int main()
 	Model model("res/models/statue/scene.gltf");
 	Model grass("res/models/grass/scene.gltf");
 	glm::mat4 modelMatrix = glm::mat4(1.0f); // Define model matrix
+
+	// Set GUI callback for file dialog (for model loading)
+	auto fileChosenCallback = [&model](const std::string& filePath) { LoadModel(model, filePath); };
+
+	// Setup GUI
+	UI GUI(window, drawNormals, renderMode, polygonMode, normalsColor, fileChosenCallback);
+	GUI.Setup();
 
 
 	// For FPS counter
@@ -139,14 +146,14 @@ int main()
 		grass.Draw(shaderProgram, camera);
 		glEnable(GL_CULL_FACE);
 
+		glUniform1i(glGetUniformLocation(shaderProgram.ID, "renderMode"), renderMode);
+
 		// Set the background color to grey if renderMode is set to textureless depth
 		// Otherwise, make it blue
 		if (renderMode == 0)
 			SetClearColor(0.85f, 0.85f, 0.9f, 1.0f);
 		else
 			SetClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-
-		glUniform1i(glGetUniformLocation(shaderProgram.ID, "renderMode"), renderMode);
 
 		if (DrawUI)
 		{
@@ -165,6 +172,56 @@ int main()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
+}
+
+bool FileExists(const std::string& path) 
+{
+	std::ifstream file(path);
+	return file.good();
+}
+
+std::string convertBackslashesToForward(const std::string& path) 
+{
+	std::string result;
+	result.reserve(path.size()); // Reserve space to avoid multiple allocations
+
+	for (char c : path) 
+	{
+		if (c == '\\') 
+		{
+			result += '/'; // Replace '\' with '/'
+		}
+		else 
+		{
+			result += c; // Append other characters unchanged
+		}
+	}
+
+	return result;
+}
+
+void LoadModel(Model& model, const std::string& path)
+{
+	std::string correctedPath = convertBackslashesToForward(path);
+	std::cout << "Loading model from path: " << correctedPath << std::endl;
+	if (!FileExists(correctedPath)) 
+	{
+		std::cerr << "Error: File does not exist at path: " << correctedPath << std::endl;
+		return;
+	}
+	try 
+	{
+		model = Model(correctedPath.c_str());
+		std::cout << "Model loaded successfully." << std::endl;
+	}
+	catch (const std::exception& e) 
+	{
+		std::cerr << "Error loading model: " << e.what() << std::endl;
+	}
+	catch (...) 
+	{
+		std::cerr << "Unknown error occurred while loading model." << std::endl;
+	}
 }
 
 void CheckStates()

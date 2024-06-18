@@ -81,6 +81,9 @@
     <ClCompile Include="C3D_UI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="libararies\imgui\ImGuiFileDialog\ImGuiFileDialog.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="default.vert">
@@ -165,6 +168,12 @@
     </ClInclude>
     <ClInclude Include="C3D_UI.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="libararies\imgui\ImGuiFileDialog\ImGuiFileDialog.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libararies\imgui\ImGuiFileDialog\ImGuiFileDialogConfig.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
