@@ -5,6 +5,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "ImGuiFileDialog.h"
+#include "glm/glm.hpp"
 #include <iostream>
 
 class UI
@@ -12,7 +13,7 @@ class UI
 public:
 	using FileSelectedCallback = std::function<void(const std::string&)>;
 
-	UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float (&normalsColor)[4], FileSelectedCallback callback);
+	UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float(&normalsColor)[4], float& modelRotation, float& normalLength, FileSelectedCallback callback);
 	~UI();
 
 	void Setup();
@@ -21,11 +22,14 @@ public:
 
 private:
 	GLFWwindow* m_window;
-	bool* m_drawNormals;
-	int* m_renderMode;
-	int* m_polygonMode;
-	float* m_normalsColor[4];
 	FileSelectedCallback m_callback;
+
+	int*   m_renderMode;
+	int*   m_polygonMode;
+	bool*  m_drawNormals;
+	float* m_modelRotation;
+	float* m_normalsColor[4];
+	float* m_normalLen;
 
 	void DrawImgui();
 };

@@ -16,7 +16,7 @@ constexpr int WINDOW_HEIGHT = 800;
 
 void CheckStates();
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void LoadModel(Model& model, const std::string& path);
+void SwapModel(Model& model, const std::string& path);
 bool FileExists(const std::string& path);
 std::string convertBackslashesToForward(const std::string& path);
 
@@ -25,12 +25,14 @@ void SetClearColor(float red, float green, float blue, float alpha)
 	glClearColor(red, green, blue, alpha);
 }
 
+// TODO: fix whatever is going on here
 int renderMode = 0;
 int polygonMode = 0;
-bool drawNormals = false;
-float normalsColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
-
 bool DrawUI = true;
+bool drawNormals = false;
+float modelRotation = 0.0f;
+float normalsColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+float normalLength = 0.01f;
 
 int main()
 {
@@ -54,10 +56,23 @@ int main()
 	gladLoadGL(); // Load GLAD
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	Skybox skybox;
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
 
+	Skybox skybox;
+	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
 	Shader shaderProgram("default.vert", "default.frag");
 	Shader normalShader("normals.vert", "normals.frag", "normals.geom");
+	Model model("res/models/statue/scene.gltf");
+	Model grass("res/models/grass/scene.gltf");
+
+	// Setup GUI
+	auto fileChosenCallback = [&model](const std::string& filePath) { SwapModel(model, filePath); };
+	UI GUI(window, drawNormals, renderMode, polygonMode, normalsColor, modelRotation, normalLength, fileChosenCallback);
+	GUI.Setup();
 
 	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 lightPos = glm::vec3(22.0f, 30.0f, 5.0f);
@@ -68,30 +83,8 @@ int main()
 	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
 	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z); 
 
-	glEnable(GL_DEPTH_TEST); // Enable the depth buffer
-	glDepthFunc(GL_LESS);
-	glDepthMask(GL_TRUE);
-	glEnable(GL_CULL_FACE); // Enable face culling
-	glCullFace(GL_BACK);    // Cull back faces and keep front faces
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
-
-	// Load models
-	Model model("res/models/statue/scene.gltf");
-	Model grass("res/models/grass/scene.gltf");
-	glm::mat4 modelMatrix = glm::mat4(1.0f); // Define model matrix
-
-	// Set GUI callback for file dialog (for model loading)
-	auto fileChosenCallback = [&model](const std::string& filePath) { LoadModel(model, filePath); };
-
-	// Setup GUI
-	UI GUI(window, drawNormals, renderMode, polygonMode, normalsColor, fileChosenCallback);
-	GUI.Setup();
-
-
 	// For FPS counter
-	double prevTime = 0.0;
+	double prevTime = glfwGetTime();
 	double currTime = 0.0;
 	double timeDiff;
 	unsigned int counter = 0;
@@ -102,11 +95,13 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear back buffer and depth buffer
+
 		// FPS counter in window title
 		currTime = glfwGetTime();
 		timeDiff = currTime - prevTime;
 		counter++;
-		if (timeDiff >= 1.0 / 30.0)
+		if (timeDiff >= 1.0 / 60.0)
 		{
 			std::string FPS = std::to_string((1.0 / timeDiff) * counter);
 			std::string ms = std::to_string((timeDiff / counter) * 1000);
@@ -116,44 +111,43 @@ int main()
 			counter = 0;
 		}
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear back buffer and depth buffer
-
 		if (!ImGui::GetIO().WantCaptureMouse && !ImGui::GetIO().WantCaptureKeyboard)
 			camera.Inputs(window); // Handle camera inputs
 
 		camera.UpdateMatrix(45.0f, 0.1f, 100.0f); // Update and export camera matrix to vertex shader
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-		model.Draw(shaderProgram, camera);
 
-		normalShader.Activate();
-		glUniformMatrix4fv(glGetUniformLocation(normalShader.ID, "camMatrix"), 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
-		glUniformMatrix4fv(glGetUniformLocation(normalShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-		glUniform1f(glGetUniformLocation(normalShader.ID, "normal_length"), 0.1f);
-		glUniform4f(glGetUniformLocation(normalShader.ID, "normalColor"), normalsColor[0], normalsColor[1], normalsColor[2], normalsColor[3]);
+		glm::mat4 modelMatrix = glm::mat4(1.0f); // Define model matrix
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(modelRotation), glm::vec3(0.0f, 1.0f, 0.0f));
 
-		CheckStates(); // Check for changes in state variables
+		// Set shaderProgram uniforms
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniform1i(glGetUniformLocation(shaderProgram.ID, "renderMode"), renderMode);
+
+		// Visualizes normals of main object
 		if (drawNormals)
 		{
+			// Activate normal shader and set uniforms
+			normalShader.Activate();
+			glUniformMatrix4fv(glGetUniformLocation(normalShader.ID, "camMatrix"), 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+			glUniformMatrix4fv(glGetUniformLocation(normalShader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+			glUniform1f(glGetUniformLocation(normalShader.ID, "normLen"), normalLength);
+			glUniform4f(glGetUniformLocation(normalShader.ID, "normalColor"), normalsColor[0], normalsColor[1], normalsColor[2], normalsColor[3]);
 			model.Draw(normalShader, camera);
 		}
+
+		CheckStates(); // Check for changes in state variables
 
 		// Render skybox
 		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // Strip translation component from view matrix
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
 		skybox.Render(view, projection);
 
+		// Render main object
+		model.Draw(shaderProgram, camera);
+
 		glDisable(GL_CULL_FACE);
 		grass.Draw(shaderProgram, camera);
 		glEnable(GL_CULL_FACE);
-
-		glUniform1i(glGetUniformLocation(shaderProgram.ID, "renderMode"), renderMode);
-
-		// Set the background color to grey if renderMode is set to textureless depth
-		// Otherwise, make it blue
-		if (renderMode == 0)
-			SetClearColor(0.85f, 0.85f, 0.9f, 1.0f);
-		else
-			SetClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 
 		if (DrawUI)
 		{
@@ -164,10 +158,9 @@ int main()
 		glfwPollEvents(); // Process GLFW events
 	}
 
+	GUI.Shutdown();
 	shaderProgram.Delete();
 	normalShader.Delete();
-
-	GUI.Shutdown();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -200,7 +193,7 @@ std::string convertBackslashesToForward(const std::string& path)
 	return result;
 }
 
-void LoadModel(Model& model, const std::string& path)
+void SwapModel(Model& model, const std::string& path)
 {
 	std::string correctedPath = convertBackslashesToForward(path);
 	std::cout << "Loading model from path: " << correctedPath << std::endl;
@@ -240,6 +233,13 @@ void CheckStates()
 		default:
 			break;
 	}
+
+	// Set the background color to grey if renderMode is set to textureless depth
+	// Otherwise, make it blue
+	if (renderMode == 0)
+		SetClearColor(0.85f, 0.85f, 0.9f, 1.0f);
+	else
+		SetClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

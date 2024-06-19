@@ -1,14 +1,16 @@
 #include "C3D_UI.h"
 
-UI::UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float(&normalsColor)[4], FileSelectedCallback callback)
+UI::UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float(&normalsColor)[4], float& modelRotation, float& normalLength, FileSelectedCallback callback)
 	: m_callback(callback)
 {
-	this->m_window = window;
-	this->m_drawNormals = &drawNormals;
-	this->m_renderMode = &renderMode;
-	this->m_polygonMode = &polygonMode;
+	// TODO: make this good
+	this->m_window        = window;
+	this->m_drawNormals   = &drawNormals;
+	this->m_renderMode    = &renderMode;
+	this->m_polygonMode   = &polygonMode;
+	this->m_modelRotation = &modelRotation;
+	this->m_normalLen     = &normalLength;
 
-	// TODO: fix this ugly shit
 	this->m_normalsColor[0] = &normalsColor[0];
 	this->m_normalsColor[1] = &normalsColor[1];
 	this->m_normalsColor[2] = &normalsColor[2];
@@ -49,6 +51,7 @@ void UI::DrawImgui()
 {
 	ImGui::Begin("C3D");
 
+	// For loading models at runtime
 	if (ImGui::Button("Open File"))
 	{
 		IGFD::FileDialogConfig config;
@@ -74,7 +77,9 @@ void UI::DrawImgui()
 	}
 	ImGui::Combo("Render Mode", m_renderMode, "Depth (Textureless)\0Depth (Textured)\0Direct Light\0Point Light\0Spot Light\0");
 	ImGui::Combo("Polygon Mode", m_polygonMode, "Fill\0Line\0Point\0");
+	ImGui::SliderFloat("Rotation", m_modelRotation, 0, 360);
 	ImGui::Checkbox("Show Normals", m_drawNormals);
+	ImGui::InputFloat("Normal Length", m_normalLen, 0.01f, 0.1f);
 	ImGui::ColorEdit3("Normals Color", *m_normalsColor);
 
 	ImGui::End();

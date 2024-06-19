@@ -3,6 +3,8 @@
 layout (triangles) in;
 layout (line_strip, max_vertices = 6) out;
 
+uniform float normLen;
+
 in DATA
 {
     vec3 Normal;
@@ -14,21 +16,13 @@ in DATA
 
 void main()
 {
-    gl_Position = data_in[0].projection * gl_in[0].gl_Position;
-    EmitVertex();
-    gl_Position = data_in[0].projection * (gl_in[0].gl_Position + 0.01f * vec4(data_in[0].Normal, 0.0f));
-    EmitVertex();
-    EndPrimitive();
-
-    gl_Position = data_in[1].projection * gl_in[1].gl_Position;
-    EmitVertex();
-    gl_Position = data_in[1].projection * (gl_in[1].gl_Position + 0.01f * vec4(data_in[1].Normal, 0.0f));
-    EmitVertex();
-    EndPrimitive();
-
-    gl_Position = data_in[2].projection * gl_in[2].gl_Position;
-    EmitVertex();
-    gl_Position = data_in[2].projection * (gl_in[2].gl_Position + 0.01f * vec4(data_in[2].Normal, 0.0f));
-    EmitVertex();
-    EndPrimitive();
+	// Transform vertices of the triangle by modelMatrix and camMatrix
+    for (int i = 0; i < 3; ++i)
+    {
+        gl_Position = data_in[i].projection * gl_in[i].gl_Position;
+        EmitVertex();
+        gl_Position = data_in[i].projection * (gl_in[i].gl_Position + normLen * vec4(data_in[i].Normal, 0.0f));
+        EmitVertex();
+        EndPrimitive();
+    }
 }

@@ -2,7 +2,6 @@
 
 Model::Model(const char* file)
 {
-	std::cout << "LOAASDFDING: " << file << std::endl;
 	std::string text = get_file_contents(file);
 	JSON = json::parse(text);
 

@@ -12,16 +12,16 @@ out vec2 texCoord;
 
 // Imports from main function
 uniform mat4 camMatrix;
-uniform mat4 model;
+uniform mat4 modelMatrix;
 uniform mat4 translation;
 uniform mat4 rotation;
 uniform mat4 scale;
 
 void main()
 {
-	currPos = vec3(model * translation * -rotation * scale * vec4(aPos, 1.0f));
+	currPos = vec3(modelMatrix * translation * rotation * scale * vec4(aPos, 1.0f));
 	Normal = aNormal;
-	color = aColor; // Assigns the colors from the vertex data to "color" variable
+	color = aColor; 
 	texCoord = mat2(0.0, -1.0, 1.0, 0.0) * aTex;
 	gl_Position = camMatrix * vec4(currPos, 1.0); // Outputs the positions and coords of all vertices
 }
