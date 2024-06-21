@@ -15,9 +15,12 @@ constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 800;
 
 void CheckStates();
+void SwapModel(Model*& model, const std::string& path);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void SwapModel(Model& model, const std::string& path);
+
 bool FileExists(const std::string& path);
+
+glm::mat4 ApplyRotation(glm::mat4& modelMatrix);
 std::string convertBackslashesToForward(const std::string& path);
 
 void SetClearColor(float red, float green, float blue, float alpha) 
@@ -28,9 +31,10 @@ void SetClearColor(float red, float green, float blue, float alpha)
 // TODO: fix whatever is going on here
 int renderMode = 0;
 int polygonMode = 0;
-bool DrawUI = true;
+bool drawUI = true;
+bool drawGrass = true;
 bool drawNormals = false;
-float modelRotation = 0.0f;
+float modelRotation[3] = { 0.0f, 0.0f, 0.0f };
 float normalsColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
 float normalLength = 0.01f;
 
@@ -64,14 +68,14 @@ int main()
 
 	Skybox skybox;
 	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
-	Shader shaderProgram("default.vert", "default.frag");
+	Shader mainShader("default.vert", "default.frag");
 	Shader normalShader("normals.vert", "normals.frag", "normals.geom");
-	Model model("res/models/statue/scene.gltf");
+	Model* model = new Model("res/models/statue/scene.gltf");
 	Model grass("res/models/grass/scene.gltf");
 
 	// Setup GUI
 	auto fileChosenCallback = [&model](const std::string& filePath) { SwapModel(model, filePath); };
-	UI GUI(window, drawNormals, renderMode, polygonMode, normalsColor, modelRotation, normalLength, fileChosenCallback);
+	UI GUI(window, renderMode, polygonMode, drawGrass, drawNormals, normalsColor, normalLength, modelRotation, fileChosenCallback);
 	GUI.Setup();
 
 	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -79,9 +83,9 @@ int main()
 	glm::mat4 lightModel = glm::mat4(1.0f);
 	lightModel = glm::translate(lightModel, lightPos);
 
-	shaderProgram.Activate();
-	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z); 
+	mainShader.Activate();
+	glUniform4f(glGetUniformLocation(mainShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+	glUniform3f(glGetUniformLocation(mainShader.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z); 
 
 	// For FPS counter
 	double prevTime = glfwGetTime();
@@ -117,11 +121,12 @@ int main()
 		camera.UpdateMatrix(45.0f, 0.1f, 100.0f); // Update and export camera matrix to vertex shader
 
 		glm::mat4 modelMatrix = glm::mat4(1.0f); // Define model matrix
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(modelRotation), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMatrix = ApplyRotation(modelMatrix);
+		//modelMatrix = glm::rotate(modelMatrix, glm::radians(modelRotation), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// Set shaderProgram uniforms
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-		glUniform1i(glGetUniformLocation(shaderProgram.ID, "renderMode"), renderMode);
+		glUniformMatrix4fv(glGetUniformLocation(mainShader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniform1i(glGetUniformLocation(mainShader.ID, "renderMode"), renderMode);
 
 		// Visualizes normals of main object
 		if (drawNormals)
@@ -132,7 +137,10 @@ int main()
 			glUniformMatrix4fv(glGetUniformLocation(normalShader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 			glUniform1f(glGetUniformLocation(normalShader.ID, "normLen"), normalLength);
 			glUniform4f(glGetUniformLocation(normalShader.ID, "normalColor"), normalsColor[0], normalsColor[1], normalsColor[2], normalsColor[3]);
-			model.Draw(normalShader, camera);
+			if (model)
+			{
+				model->Draw(normalShader, camera);
+			}
 		}
 
 		CheckStates(); // Check for changes in state variables
@@ -143,13 +151,19 @@ int main()
 		skybox.Render(view, projection);
 
 		// Render main object
-		model.Draw(shaderProgram, camera);
+		if (model)
+		{
+			model->Draw(mainShader, camera);
+		}
 
-		glDisable(GL_CULL_FACE);
-		grass.Draw(shaderProgram, camera);
-		glEnable(GL_CULL_FACE);
+		if (drawGrass)
+		{
+			glDisable(GL_CULL_FACE);
+			grass.Draw(mainShader, camera);
+			glEnable(GL_CULL_FACE);
+		}
 
-		if (DrawUI)
+		if (drawUI)
 		{
 			GUI.Render();
 		}
@@ -159,12 +173,22 @@ int main()
 	}
 
 	GUI.Shutdown();
-	shaderProgram.Delete();
+	delete(model);
+	mainShader.Delete();
 	normalShader.Delete();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
+}
+
+glm::mat4 ApplyRotation(glm::mat4& modelMatrix)
+{
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(modelRotation[0]), glm::vec3(1.0f, 0.0f, 0.0f)); // x-axis
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(modelRotation[1]), glm::vec3(0.0f, 1.0f, 0.0f)); // y-axis
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(modelRotation[2]), glm::vec3(0.0f, 0.0f, 1.0f)); // z-axis
+
+	return modelMatrix;
 }
 
 bool FileExists(const std::string& path) 
@@ -193,7 +217,7 @@ std::string convertBackslashesToForward(const std::string& path)
 	return result;
 }
 
-void SwapModel(Model& model, const std::string& path)
+void SwapModel(Model*& model, const std::string& path)
 {
 	std::string correctedPath = convertBackslashesToForward(path);
 	std::cout << "Loading model from path: " << correctedPath << std::endl;
@@ -204,7 +228,14 @@ void SwapModel(Model& model, const std::string& path)
 	}
 	try 
 	{
-		model = Model(correctedPath.c_str());
+		if (model == nullptr)
+		{
+			model = new Model(correctedPath.c_str());
+		}
+		else
+		{
+			*model = Model(correctedPath.c_str());
+		}
 		std::cout << "Model loaded successfully." << std::endl;
 	}
 	catch (const std::exception& e) 
@@ -252,7 +283,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				glfwSetWindowShouldClose(window, true);
 				break;
 			case GLFW_KEY_SPACE:
-				DrawUI = !DrawUI;
+				drawUI = !drawUI;
+				break;
 		}
 	}
 }

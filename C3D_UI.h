@@ -13,7 +13,7 @@ class UI
 public:
 	using FileSelectedCallback = std::function<void(const std::string&)>;
 
-	UI(GLFWwindow* window, bool& drawNormals, int& renderMode, int& polygonMode, float(&normalsColor)[4], float& modelRotation, float& normalLength, FileSelectedCallback callback);
+	UI(GLFWwindow* window, int& renderMode, int& polygonMode, bool& drawGrass, bool& drawNormals, float(&normalsColor)[4], float& normalLength, float(&modelRotation)[3], FileSelectedCallback callback);
 	~UI();
 
 	void Setup();
@@ -26,10 +26,11 @@ private:
 
 	int*   m_renderMode;
 	int*   m_polygonMode;
+	bool*  m_drawGrass;
 	bool*  m_drawNormals;
-	float* m_modelRotation;
-	float* m_normalsColor[4];
 	float* m_normalLen;
+	float* m_normalsColor[4];
+	float* m_modelRotation[3];
 
 	void DrawImgui();
 };
