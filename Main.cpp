@@ -28,7 +28,7 @@ void SetClearColor(float red, float green, float blue, float alpha)
 	glClearColor(red, green, blue, alpha);
 }
 
-// TODO: fix whatever is going on here
+// Global state variables
 int renderMode = 0;
 int polygonMode = 0;
 bool drawUI = true;
@@ -75,7 +75,20 @@ int main()
 
 	// Setup GUI
 	auto fileChosenCallback = [&model](const std::string& filePath) { SwapModel(model, filePath); };
-	UI GUI(window, renderMode, polygonMode, drawGrass, drawNormals, normalsColor, normalLength, modelRotation, fileChosenCallback);
+
+	UIParams uiParams{
+		window,
+		renderMode,
+		polygonMode,
+		drawGrass,
+		drawNormals,
+		normalsColor,
+		normalLength,
+		modelRotation,
+		fileChosenCallback
+	};
+
+	UI GUI(uiParams);
 	GUI.Setup();
 
 	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -230,11 +243,11 @@ void SwapModel(Model*& model, const std::string& path)
 	{
 		if (model == nullptr)
 		{
-			model = new Model(correctedPath.c_str());
+			model = new Model(correctedPath.c_str()); // Makes a new model object if nullptr
 		}
 		else
 		{
-			*model = Model(correctedPath.c_str());
+			*model = Model(correctedPath.c_str()); // Reassigns the model pointer
 		}
 		std::cout << "Model loaded successfully." << std::endl;
 	}
@@ -262,6 +275,7 @@ void CheckStates()
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 			break;
 		default:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // Set the default to fill just in case something happens
 			break;
 	}
 

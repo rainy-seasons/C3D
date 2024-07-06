@@ -8,12 +8,27 @@
 #include "glm/glm.hpp"
 #include <iostream>
 
+// Forward declare the UI class
+class UI;
+
+struct UIParams {
+	GLFWwindow* window;
+	int& renderMode;
+	int& polygonMode;
+	bool& drawGrass;
+	bool& drawNormals;
+	float(&normalsColor)[4];
+	float& normalLength;
+	float(&modelRotation)[3];
+	std::function<void(const std::string&)> callback; // Use std::function directly;
+};
+
 class UI
 {
 public:
 	using FileSelectedCallback = std::function<void(const std::string&)>;
 
-	UI(GLFWwindow* window, int& renderMode, int& polygonMode, bool& drawGrass, bool& drawNormals, float(&normalsColor)[4], float& normalLength, float(&modelRotation)[3], FileSelectedCallback callback);
+	UI(const UIParams& params);
 	~UI();
 
 	void Setup();

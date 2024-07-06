@@ -1,24 +1,24 @@
 #include "C3D_UI.h"
 
-UI::UI(GLFWwindow* window, int& renderMode, int& polygonMode, bool& drawGrass, bool& drawNormals, float(&normalsColor)[4], float& normalLength, float(&modelRotation)[3], FileSelectedCallback callback)
-	: m_callback(callback)
+UI::UI(const UIParams& params)
+	: m_window(params.window),
+	m_renderMode(&params.renderMode),
+	m_polygonMode(&params.polygonMode),
+	m_drawGrass(&params.drawGrass),
+	m_drawNormals(&params.drawNormals),
+	m_normalLen(&params.normalLength),
+	m_callback(params.callback)
 {
-	// TODO: make this good
-	this->m_window        = window;
-	this->m_renderMode    = &renderMode;
-	this->m_polygonMode   = &polygonMode;
-	this->m_drawGrass     = &drawGrass;
-	this->m_drawNormals   = &drawNormals;
-	this->m_normalLen     = &normalLength;
+	// Copy array pointers
+	for (int i = 0; i < 4; ++i)
+	{
+		m_normalsColor[i] = &params.normalsColor[i];
+	}
 
-	this->m_modelRotation[0] = &modelRotation[0];
-	this->m_modelRotation[1] = &modelRotation[1];
-	this->m_modelRotation[2] = &modelRotation[2];
-
-	this->m_normalsColor[0] = &normalsColor[0];
-	this->m_normalsColor[1] = &normalsColor[1];
-	this->m_normalsColor[2] = &normalsColor[2];
-	this->m_normalsColor[3] = &normalsColor[3];
+	for (int i = 0; i < 3; ++i)
+	{
+		m_modelRotation[i] = &params.modelRotation[i];
+	}
 }
 
 UI::~UI()
