@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="C3D.cpp" />
     <ClCompile Include="C3D_UI.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EBO.cpp" />
@@ -173,6 +174,7 @@
     <None Include="skybox.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="C3D.h" />
     <ClInclude Include="C3D_UI.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="EBO.h" />
