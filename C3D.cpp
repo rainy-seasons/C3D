@@ -69,14 +69,18 @@ void C3D::InitShaders()
 {
 	m_mainShader = new Shader("default.vert", "default.frag");
 	m_normalShader = new Shader("normals.vert", "normals.frag", "normals.geom");
-	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	glm::vec3 lightPos = glm::vec3(22.0f, 30.0f, 5.0f);
-	glm::mat4 lightModel = glm::mat4(1.0f);
-	lightModel = glm::translate(lightModel, lightPos);
+
+	Light mainLight;
+	mainLight.Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	mainLight.Pos = glm::vec3(22.0f, 30.0f, 5.0f);
+	mainLight.Model = glm::mat4(1.0f);
+	mainLight.Model = glm::translate(mainLight.Model, mainLight.Pos);
+
+	m_lightsVec.push_back(mainLight);
 
 	m_mainShader->Activate();
-	glUniform4f(glGetUniformLocation(m_mainShader->ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-	glUniform3f(glGetUniformLocation(m_mainShader->ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z); 
+	glUniform4f(glGetUniformLocation(m_mainShader->ID, "lightColor"), mainLight.Color.x, mainLight.Color.y, mainLight.Color.z, mainLight.Color.w);
+	glUniform3f(glGetUniformLocation(m_mainShader->ID, "lightPos"), mainLight.Pos.x, mainLight.Pos.y, mainLight.Pos.z); 
 }
 
 void C3D::InitModels()
@@ -98,6 +102,7 @@ void C3D::Run()
 
 		if (!ImGui::GetIO().WantCaptureMouse && !ImGui::GetIO().WantCaptureKeyboard)
 			m_camera->Inputs(m_window); // Handle camera inputs
+
 		m_camera->UpdateMatrix(45.0f, 0.1f, 100.0f); // Update and export camera matrix to vertex shader	
 
 		glm::mat4 modelMatrix = glm::mat4(1.0f); // Define model matrix
@@ -107,6 +112,12 @@ void C3D::Run()
 		// Set shaderProgram uniforms
 		glUniformMatrix4fv(glGetUniformLocation(m_mainShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 		glUniform1i(glGetUniformLocation(m_mainShader->ID, "renderMode"), m_renderMode);
+
+		for (auto light : m_lightsVec)
+		{
+			glUniform4f(glGetUniformLocation(m_mainShader->ID, "lightColor"), light.Color.x, light.Color.y, light.Color.z, light.Color.w);
+			glUniform3f(glGetUniformLocation(m_mainShader->ID, "lightPos"), light.Pos.x, light.Pos.y, light.Pos.z);
+		}
 
 		// Visualizes normals of main object
 		if (m_drawNormals)
@@ -122,6 +133,7 @@ void C3D::Run()
 				m_model->Draw(*m_normalShader, *m_camera);
 			}
 		}
+
 
 		CheckStates(); // Check for changes in state variables
 
@@ -165,6 +177,7 @@ void C3D::InitImGui()
 		m_normalsColor,
 		m_normalLength,
 		m_modelRotation,
+		m_lightsVec,
 		fileChosenCallback
 	};
 

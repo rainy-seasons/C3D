@@ -7,6 +7,7 @@ UI::UI(const UIParams& params)
 	m_drawGrass(&params.drawGrass),
 	m_drawNormals(&params.drawNormals),
 	m_normalLen(&params.normalLength),
+	m_lightsVec(&params.lightsVec),
 	m_callback(params.callback)
 {
 	// Copy array pointers
@@ -86,6 +87,28 @@ void UI::DrawImgui()
 	ImGui::Checkbox("Show Normals", m_drawNormals);
 	ImGui::InputFloat("Normal Length", m_normalLen, 0.01f, 0.1f);
 	ImGui::ColorEdit3("Normals Color", *m_normalsColor);
+
+	//if (ImGui::Button("Add Light"))
+	//{
+	//	m_lightsVec->push_back(Light{
+	//		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // Color
+	//		glm::vec3(10.0f, 5.0f, 20.0f),     // Pos
+	//		glm::mat4(1.0f)					   // Model matrix
+	//	});
+	//}
+
+	int i = 0;
+	for (size_t i = 0; i < m_lightsVec->size(); ++i) 
+	{
+		std::string lightLabel = "Light " + std::to_string(i + 1);
+
+		if (ImGui::TreeNode(lightLabel.c_str())) 
+		{
+			ImGui::ColorEdit4("Color", glm::value_ptr((*m_lightsVec)[i].Color)); // Use value_ptr
+			ImGui::DragFloat3("Position", glm::value_ptr((*m_lightsVec)[i].Pos)); // Use value_ptr
+			ImGui::TreePop();
+		}
+	}
 
 	ImGui::End();
 }

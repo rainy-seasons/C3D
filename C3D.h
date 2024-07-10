@@ -8,6 +8,7 @@
 #include "Skybox.h"
 #include "C3D_UI.h"
 #include "ShaderClass.h"
+#include "Light.h"
 
 class C3D 
 {
@@ -49,6 +50,8 @@ private:
 	Camera* m_camera;
 	Shader* m_mainShader;
 	Shader* m_normalShader;
+
+	std::vector<Light> m_lightsVec;
 
 	GLFWwindow* m_window;
 };
