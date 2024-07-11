@@ -32,16 +32,9 @@ private:
 	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 private:
-	int   m_renderMode;
-	int   m_polygonMode;
-	bool  m_drawUI;
-	bool  m_drawGrass;
-	bool  m_drawNormals;
-	float m_normalLength;
-	float m_modelRotation[3];
-	float m_normalsColor[4];
-
 	int m_width, m_height;
+
+	bool m_drawUI;
 
 	UI*     m_gui;
 	Model*  m_model;
@@ -54,4 +47,15 @@ private:
 	std::vector<Light> m_lightsVec;
 
 	GLFWwindow* m_window;
+
+	UIParams m_uiParams {
+		0,                        // renderMode
+		0,                        // polygonMode
+		true,                     // drawGrass
+		false,                    // drawNormals
+		{0.0f, 1.0f, 0.0f, 1.0f}, // normalsColor[]
+		0.01f,                    // normalLength
+		{0.0f, 0.0f, 0.0f},       // modelRotation[]
+		&m_lightsVec              // pointer to lights vector
+	};
 };

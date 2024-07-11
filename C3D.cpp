@@ -1,14 +1,13 @@
 #include "C3D.h"
 
 C3D::C3D(int width, int height, const std::string& title)
-	: m_renderMode(0), m_polygonMode(0),
-	m_drawUI(true), m_drawGrass(true), m_drawNormals(false),
-	m_normalLength(0.01f), m_width(width), m_height(height)
+	: m_width(width), m_height(height)
 {
-	std::fill(std::begin(m_modelRotation), std::end(m_modelRotation), 0.0f);
-	std::fill(std::begin(m_normalsColor), std::end(m_normalsColor), 0.0f);
-	m_normalsColor[1] = 1.0f;
-	m_normalsColor[3] = 1.0f;
+	m_drawUI = true;
+	std::fill(std::begin(m_uiParams.modelRotation), std::end(m_uiParams.modelRotation), 0.0f);
+	std::fill(std::begin(m_uiParams.normalsColor), std::end(m_uiParams.normalsColor), 0.0f);
+	m_uiParams.normalsColor[1] = 1.0f;
+	m_uiParams.normalsColor[3] = 1.0f;
 
 	InitGLSetup();
 	InitModels();
@@ -54,6 +53,7 @@ void C3D::InitGLSetup()
 			app->key_callback(window, key, scancode, action, mods);
 		}
 		});
+
 
 	gladLoadGL(); // Load GLAD
 	glViewport(0, 0, m_width, m_height);
@@ -107,33 +107,31 @@ void C3D::Run()
 
 		glm::mat4 modelMatrix = glm::mat4(1.0f); // Define model matrix
 		modelMatrix = ApplyRotation(modelMatrix);
-		//modelMatrix = glm::rotate(modelMatrix, glm::radians(modelRotation), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// Set shaderProgram uniforms
 		glUniformMatrix4fv(glGetUniformLocation(m_mainShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-		glUniform1i(glGetUniformLocation(m_mainShader->ID, "renderMode"), m_renderMode);
+		glUniform1i(glGetUniformLocation(m_mainShader->ID, "renderMode"), m_uiParams.renderMode);
 
-		for (auto light : m_lightsVec)
+		for (const auto& light : m_lightsVec)
 		{
 			glUniform4f(glGetUniformLocation(m_mainShader->ID, "lightColor"), light.Color.x, light.Color.y, light.Color.z, light.Color.w);
 			glUniform3f(glGetUniformLocation(m_mainShader->ID, "lightPos"), light.Pos.x, light.Pos.y, light.Pos.z);
 		}
 
 		// Visualizes normals of main object
-		if (m_drawNormals)
+		if (m_uiParams.drawNormals)
 		{
 			// Activate normal shader and set uniforms
 			m_normalShader->Activate();
 			glUniformMatrix4fv(glGetUniformLocation(m_normalShader->ID, "camMatrix"), 1, GL_FALSE, glm::value_ptr(m_camera->GetViewMatrix()));
 			glUniformMatrix4fv(glGetUniformLocation(m_normalShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-			glUniform1f(glGetUniformLocation(m_normalShader->ID, "normLen"), m_normalLength);
-			glUniform4f(glGetUniformLocation(m_normalShader->ID, "normalColor"), m_normalsColor[0], m_normalsColor[1], m_normalsColor[2], m_normalsColor[3]);
+			glUniform1f(glGetUniformLocation(m_normalShader->ID, "normLen"), m_uiParams.normalLength);
+			glUniform4f(glGetUniformLocation(m_normalShader->ID, "normalColor"), m_uiParams.normalsColor[0], m_uiParams.normalsColor[1], m_uiParams.normalsColor[2], m_uiParams.normalsColor[3]);
 			if (m_model)
 			{
 				m_model->Draw(*m_normalShader, *m_camera);
 			}
 		}
-
 
 		CheckStates(); // Check for changes in state variables
 
@@ -148,7 +146,7 @@ void C3D::Run()
 			m_model->Draw(*m_mainShader, *m_camera);
 		}
 
-		if (m_drawGrass)
+		if (m_uiParams.drawGrass)
 		{
 			glDisable(GL_CULL_FACE);
 			m_grass->Draw(*m_mainShader, *m_camera);
@@ -168,20 +166,10 @@ void C3D::Run()
 void C3D::InitImGui()
 {
 	auto fileChosenCallback = [this](const std::string& filePath) { SwapModel(m_model, filePath); };
-	UIParams uiParams{
-		m_window,
-		m_renderMode,
-		m_polygonMode,
-		m_drawGrass,
-		m_drawNormals,
-		m_normalsColor,
-		m_normalLength,
-		m_modelRotation,
-		m_lightsVec,
-		fileChosenCallback
-	};
+	
+	m_uiParams.callback = fileChosenCallback;
 
-	m_gui = new UI(uiParams);
+	m_gui = new UI(m_window, m_uiParams);
 	m_gui->Setup();
 }
 
@@ -203,9 +191,9 @@ void C3D::key_callback(GLFWwindow* window, int key, int scancode, int action, in
 
 glm::mat4 C3D::ApplyRotation(glm::mat4& modelMatrix)
 {
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(m_modelRotation[0]), glm::vec3(1.0f, 0.0f, 0.0f)); // x-axis
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(m_modelRotation[1]), glm::vec3(0.0f, 1.0f, 0.0f)); // y-axis
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(m_modelRotation[2]), glm::vec3(0.0f, 0.0f, 1.0f)); // z-axis
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(m_uiParams.modelRotation[0]), glm::vec3(1.0f, 0.0f, 0.0f)); // x-axis
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(m_uiParams.modelRotation[1]), glm::vec3(0.0f, 1.0f, 0.0f)); // y-axis
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(m_uiParams.modelRotation[2]), glm::vec3(0.0f, 0.0f, 1.0f)); // z-axis
 
 	return modelMatrix;
 }
@@ -269,7 +257,7 @@ void C3D::SwapModel(Model*& model, const std::string& path)
 
 void C3D::CheckStates()
 {
-	switch (m_polygonMode)
+	switch (m_uiParams.polygonMode)
 	{
 	case 0:
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -287,7 +275,7 @@ void C3D::CheckStates()
 
 	// Set the background color to grey if renderMode is set to textureless depth
 	// Otherwise, make it blue
-	if (m_renderMode == 0)
+	if (m_uiParams.renderMode == 0)
 		glClearColor(0.85f, 0.85f, 0.9f, 1.0f);
 	else
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
