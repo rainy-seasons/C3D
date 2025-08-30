@@ -22,6 +22,7 @@ struct UIParams {
 	float normalsColor[4];
 	float normalLength;
 	float modelRotation[3];
+	bool showLightPositions;
 	std::vector<Light>* lightsVec;
 	std::function<void(const std::string&)> callback; // Use std::function directly;
 };
@@ -29,8 +30,6 @@ struct UIParams {
 class UI
 {
 public:
-	//using FileSelectedCallback = std::function<void(const std::string&)>;
-
 	UI(GLFWwindow* window, UIParams& params);
 	~UI();
 
@@ -40,8 +39,6 @@ public:
 
 private:
 	GLFWwindow* m_window;
-	//FileSelectedCallback m_callback;
-
 	UIParams& m_uiParams;
 
 	void DrawImgui();

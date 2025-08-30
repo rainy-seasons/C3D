@@ -110,6 +110,12 @@
     <None Include="normals.vert">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="billboard.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="billboard.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderClass.h">

@@ -69,18 +69,19 @@ void UI::DrawImgui()
 	ImGui::Checkbox("Show Normals", &m_uiParams.drawNormals);
 	ImGui::InputFloat("Normal Length", &m_uiParams.normalLength, 0.01f, 0.1f);
 	ImGui::ColorEdit3("Normals Color", m_uiParams.normalsColor);
+	ImGui::Checkbox("Show Light Positions", &m_uiParams.showLightPositions);
 
-	//if (ImGui::Button("Add Light"))
-	//{
-	//	m_lightsVec->push_back(Light{
-	//		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // Color
-	//		glm::vec3(10.0f, 5.0f, 20.0f),     // Pos
-	//		glm::mat4(1.0f)					   // Model matrix
-	//	});
-	//}
+	if (ImGui::Button("Add Light"))
+	{
+		m_uiParams.lightsVec->push_back(Light{
+			glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // Color
+			glm::vec3(10.0f, 5.0f, 20.0f),     // Pos
+			glm::mat4(1.0f)					   // Model matrix
+		});
+	}
 
 	int i = 0;
-	for (size_t i = 0; i < m_uiParams.lightsVec->size(); ++i) 
+	while (i < m_uiParams.lightsVec->size())
 	{
 		std::string lightLabel = "Light " + std::to_string(i + 1);
 
@@ -88,8 +89,15 @@ void UI::DrawImgui()
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr((*m_uiParams.lightsVec)[i].Color));
 			ImGui::DragFloat3("Position", glm::value_ptr((*m_uiParams.lightsVec)[i].Pos)); 
+			if (ImGui::Button(("Delete##" + std::to_string(i)).c_str()) && m_uiParams.lightsVec->size() > 1)
+			{
+				m_uiParams.lightsVec->erase(m_uiParams.lightsVec->begin() + i);
+				ImGui::TreePop();
+				continue; // Skip i++ so we don't skip the next element
+			}
 			ImGui::TreePop();
 		}
+		i++;
 	}
 
 	ImGui::End();

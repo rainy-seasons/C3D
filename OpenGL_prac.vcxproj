@@ -165,6 +165,8 @@
     <ClCompile Include="VBO.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="billboard.frag" />
+    <None Include="billboard.vert" />
     <None Include="default.frag" />
     <None Include="default.vert" />
     <None Include="normals.frag" />

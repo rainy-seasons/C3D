@@ -39,6 +39,7 @@ private:
 	UI*     m_gui;
 	Model*  m_model;
 	Model*  m_grass;
+	Model*  m_lightSphere;
 	Skybox* m_skybox;
 	Camera* m_camera;
 	Shader* m_mainShader;
@@ -48,14 +49,15 @@ private:
 
 	GLFWwindow* m_window;
 
-	UIParams m_uiParams {
-		0,                        // renderMode
+	UIParams m_uiParams{
+		2,                        // renderMode
 		0,                        // polygonMode
 		true,                     // drawGrass
 		false,                    // drawNormals
 		{0.0f, 1.0f, 0.0f, 1.0f}, // normalsColor[]
 		0.01f,                    // normalLength
 		{0.0f, 0.0f, 0.0f},       // modelRotation[]
+		false,					  // showLightPositions
 		&m_lightsVec              // pointer to lights vector
 	};
 };

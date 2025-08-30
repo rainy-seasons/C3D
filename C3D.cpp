@@ -16,12 +16,13 @@ C3D::C3D(int width, int height, const std::string& title)
 }
 
 C3D::~C3D()
-{ 
+{
 	delete m_gui;
 	delete m_skybox;
 	delete m_camera;
 	delete m_model;
 	delete m_grass;
+	delete m_lightSphere;
 	delete m_mainShader;
 	delete m_normalShader;
 	delete m_window;
@@ -80,7 +81,7 @@ void C3D::InitShaders()
 
 	m_mainShader->Activate();
 	glUniform4f(glGetUniformLocation(m_mainShader->ID, "lightColor"), mainLight.Color.x, mainLight.Color.y, mainLight.Color.z, mainLight.Color.w);
-	glUniform3f(glGetUniformLocation(m_mainShader->ID, "lightPos"), mainLight.Pos.x, mainLight.Pos.y, mainLight.Pos.z); 
+	glUniform3f(glGetUniformLocation(m_mainShader->ID, "lightPos"), mainLight.Pos.x, mainLight.Pos.y, mainLight.Pos.z);
 }
 
 void C3D::InitModels()
@@ -90,6 +91,8 @@ void C3D::InitModels()
 
 	m_model = new Model("res/models/statue/scene.gltf");
 	m_grass = new Model("res/models/grass/scene.gltf");
+
+	m_lightSphere = new Model("res/models/lightsphere/scene.gltf");
 
 	m_skybox->Initialize();
 }
@@ -153,6 +156,21 @@ void C3D::Run()
 			glEnable(GL_CULL_FACE);
 		}
 
+		if (m_uiParams.showLightPositions && m_lightSphere)
+		{
+			//m_mainShader->Activate();
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
+			for (const auto& light : m_lightsVec)
+			{
+				glm::mat4 model = glm::translate(glm::mat4(1.0f), light.Pos);
+				//model = glm::scale(model, glm::vec3(0.2f));
+				glUniformMatrix4fv(glGetUniformLocation(m_mainShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(model));
+
+				m_lightSphere->Draw(*m_mainShader, *m_camera);
+			}
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+
 		if (m_drawUI)
 		{
 			m_gui->Render();
@@ -166,7 +184,7 @@ void C3D::Run()
 void C3D::InitImGui()
 {
 	auto fileChosenCallback = [this](const std::string& filePath) { SwapModel(m_model, filePath); };
-	
+
 	m_uiParams.callback = fileChosenCallback;
 
 	m_gui = new UI(m_window, m_uiParams);
